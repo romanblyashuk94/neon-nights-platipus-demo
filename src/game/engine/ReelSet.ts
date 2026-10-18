@@ -77,7 +77,7 @@ export class ReelSet extends Container {
     const stopped: Promise<void>[] = []
     for (let i = 0; i < REEL_COUNT; i++) {
       if (i > 0) await delay.wait(timing.stopStagger)
-      stopped.push(this.reels[i].stop(grid[i], speed).then(() => onReelStop(i)))
+      stopped.push(this.reels[i].stop(grid[i], speed, () => onReelStop(i)))
     }
     await Promise.all(stopped)
     this.delay = null

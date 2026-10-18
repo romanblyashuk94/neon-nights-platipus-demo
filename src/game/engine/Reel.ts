@@ -7,6 +7,10 @@ import { SymbolView } from './SymbolView'
 /** Visible rows plus one hidden buffer symbol above and one below the window. */
 const VIEW_COUNT = ROW_COUNT + 2
 const MAX_BLUR = 14
+/** How far (in symbols) the reel travels past its stop before settling back. */
+const OVERSHOOT = 0.2
+/** Braking distance (in symbols) from full speed to the overshoot point. */
+const BRAKE_DISTANCE = 1.6
 
 type ReelState = 'idle' | 'starting' | 'spinning' | 'stopping'
 
@@ -90,11 +94,15 @@ export class Reel extends Container {
       .to(this.strip, { y: 0, duration: 0.18, ease: 'power1.in' }, '<')
   }
 
-  stop(result: SymbolId[], { speed }: ReelSpeed): Promise<void> {
+  /**
+   * Cruises at full speed, brakes past the stop position and settles back onto it.
+   * `onImpact` fires at the moment the reel hits its stop; the promise resolves once it has settled.
+   */
+  stop(result: SymbolId[], { speed }: ReelSpeed, onImpact?: () => void): Promise<void> {
     this.startTimeline?.kill()
     this.startTimeline = null
     gsap.killTweensOf(this)
-    this.strip.y = 0
+    gsap.to(this.strip, { y: 0, duration: 0.12, ease: 'power1.out' })
 
     const v = Math.max(this.speed, speed * 0.6)
     this.speed = 0
@@ -102,27 +110,26 @@ export class Reel extends Container {
     this.state = 'stopping'
     // At least one full lap so every visible view wraps once and receives its result symbol.
     this.targetPos = Math.ceil(this.spinPos) + VIEW_COUNT + 1
-    const distance = this.targetPos - this.spinPos
-    // power1.out starts at 2x average speed, so this keeps the velocity continuous.
-    const duration = (2 * distance) / v
+    const overshootPos = this.targetPos + OVERSHOOT
+    const brakeStart = overshootPos - BRAKE_DISTANCE
+    const settle = Math.min(0.32, 7 / speed)
 
     return new Promise((resolve) => {
-      gsap.to(this, {
-        spinPos: this.targetPos,
-        duration,
-        ease: 'power1.out',
-        onComplete: () => {
-          this.state = 'idle'
-          this.spinPos = this.targetPos
-          this.layout()
-          this.setBlur(0)
-          gsap
-            .timeline()
-            .to(this.strip, { y: 18, duration: 0.07, ease: 'power1.out' })
-            .to(this.strip, { y: 0, duration: 0.55, ease: 'elastic.out(1.1, 0.35)' })
-          resolve()
-        },
-      })
+      gsap
+        .timeline({
+          onComplete: () => {
+            this.state = 'idle'
+            this.spinPos = this.targetPos
+            this.layout()
+            this.setBlur(0)
+            resolve()
+          },
+        })
+        .to(this, { spinPos: brakeStart, duration: (brakeStart - this.spinPos) / v, ease: 'none' })
+        // power1.out starts at 2x its average speed, so braking keeps the velocity continuous.
+        .to(this, { spinPos: overshootPos, duration: (2 * BRAKE_DISTANCE) / v, ease: 'power1.out' })
+        .add(() => onImpact?.())
+        .to(this, { spinPos: this.targetPos, duration: settle, ease: 'sine.inOut' })
     })
   }
 
