@@ -82,7 +82,7 @@ export function ControlPanel() {
         </div>
       </div>
 
-      <p className="mt-2 hidden text-xs font-semibold tracking-[0.2em] text-violet-200/40 sm:block">
+      <p className="mt-2 hidden text-xs font-semibold tracking-[0.2em] text-violet-200/40 sm:block short:hidden">
         <Kbd>SPACE</Kbd> spin / stop · <Kbd>T</Kbd> turbo · <Kbd>A</Kbd> auto · <Kbd>M</Kbd> sound
       </p>
     </div>

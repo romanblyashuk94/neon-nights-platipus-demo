@@ -6,6 +6,8 @@
 @import '@fontsource/rajdhani/latin-700.css';
 @import 'tailwindcss';
 
+@custom-variant short (@media (max-height: 800px));
+
 @theme {
   --font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
@@ -91,6 +93,13 @@
   body,
   #root {
     height: 100%;
+  }
+
+  /* The HUD is sized in rem, so on desktop it shrinks with the viewport height just like the reels do. */
+  html {
+    @variant sm {
+      font-size: clamp(12px, 1.75vh, 16px);
+    }
   }
 
   body {
