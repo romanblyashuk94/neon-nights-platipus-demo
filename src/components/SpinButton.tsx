@@ -40,7 +40,9 @@ export function SpinButton() {
       />
       <span className="absolute inset-[5px] rounded-full bg-[radial-gradient(circle_at_32%_25%,#4a1d96,#12052e_58%,#07021a)] shadow-[inset_0_0_22px_rgba(255,43,214,0.5)] transition-all duration-200 group-hover:shadow-[inset_0_0_34px_rgba(34,232,255,0.75)] group-active:scale-95" />
       <span className="relative flex flex-col items-center gap-0.5 text-white transition-transform group-active:scale-90">
-        <Icon className={cn('size-7 sm:size-9 drop-shadow-[0_0_8px_rgba(34,232,255,0.9)]', idle && 'transition-transform duration-500 group-hover:rotate-180')} />
+        <span className={cn(idle && 'transition-transform duration-500 group-hover:rotate-180')}>
+          <Icon className="size-7 sm:size-9 drop-shadow-[0_0_8px_rgba(34,232,255,0.9)]" />
+        </span>
         <span className="font-display text-xs font-black tracking-[0.25em] text-glow-cyan sm:text-sm">{label}</span>
       </span>
     </button>

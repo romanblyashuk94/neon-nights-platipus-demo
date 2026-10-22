@@ -28,12 +28,33 @@ function IconButton({
   );
 }
 
-export function TopBar() {
-  const ref = useReportInset<HTMLElement>("top");
+function BigWinArmedBadge() {
+  const armed = useGameStore((s) => s.forceBigWin);
+  if (!armed) return null;
+
+  return (
+    <span className="animate-pop-in rounded-full border border-neon-yellow/60 bg-neon-yellow/15 px-3 py-1 font-display text-[10px] font-bold tracking-[0.25em] text-neon-yellow shadow-[0_0_20px_rgba(255,225,77,0.45)]">
+      BIG WIN ARMED
+    </span>
+  );
+}
+
+function MuteButton() {
   const muted = useGameStore((s) => s.muted);
   const toggleMute = useGameStore((s) => s.toggleMute);
-  const setPaytableOpen = useGameStore((s) => s.setPaytableOpen);
-  const forceBigWin = useGameStore((s) => s.forceBigWin);
+
+  return (
+    <IconButton label={muted ? "Unmute" : "Mute"} onClick={toggleMute}>
+      {muted ? (
+        <SoundOffIcon className="size-5" />
+      ) : (
+        <SoundOnIcon className="size-5" />
+      )}
+    </IconButton>
+  );
+}
+
+function FullscreenButton() {
   const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
@@ -48,6 +69,20 @@ export function TopBar() {
   };
 
   return (
+    <IconButton
+      label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+      onClick={toggleFullscreen}
+    >
+      <FullscreenIcon className="size-5" />
+    </IconButton>
+  );
+}
+
+export function TopBar() {
+  const ref = useReportInset<HTMLElement>("top");
+  const setPaytableOpen = useGameStore((s) => s.setPaytableOpen);
+
+  return (
     <header
       ref={ref}
       className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-3 sm:p-4"
@@ -59,30 +94,15 @@ export function TopBar() {
         <span className="hidden rounded-full border border-white/10 bg-night-900/50 px-3 py-1 text-xs font-semibold tracking-[0.15em] text-violet-200/60 backdrop-blur-md md:inline">
           React · PixiJS v8 · Tailwind
         </span>
-        {forceBigWin && (
-          <span className="animate-pop-in rounded-full border border-neon-yellow/60 bg-neon-yellow/15 px-3 py-1 font-display text-[10px] font-bold tracking-[0.25em] text-neon-yellow shadow-[0_0_20px_rgba(255,225,77,0.45)]">
-            BIG WIN ARMED
-          </span>
-        )}
+        <BigWinArmedBadge />
       </div>
 
       <div className="pointer-events-auto flex gap-2">
         <IconButton label="Paytable" onClick={() => setPaytableOpen(true)}>
           <InfoIcon className="size-5" />
         </IconButton>
-        <IconButton label={muted ? "Unmute" : "Mute"} onClick={toggleMute}>
-          {muted ? (
-            <SoundOffIcon className="size-5" />
-          ) : (
-            <SoundOnIcon className="size-5" />
-          )}
-        </IconButton>
-        <IconButton
-          label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-          onClick={toggleFullscreen}
-        >
-          <FullscreenIcon className="size-5" />
-        </IconButton>
+        <MuteButton />
+        <FullscreenButton />
       </div>
     </header>
   );

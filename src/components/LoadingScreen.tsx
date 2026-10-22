@@ -4,9 +4,24 @@ import { useGameStore } from '../store/gameStore'
 
 const BASE = import.meta.env.BASE_URL
 
+function LoadingProgress() {
+  const percent = useGameStore((s) => Math.round(s.loadProgress * 100))
+
+  return (
+    <div className="w-64 sm:w-80">
+      <div className="h-2 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
+        <div
+          className="h-full rounded-full bg-linear-to-r from-neon-cyan via-neon-purple to-neon-pink shadow-[0_0_16px_rgba(255,43,214,0.8)] transition-[width] duration-300"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="mt-3 font-display text-xs font-bold tracking-[0.4em] text-violet-200/60">LOADING {percent}%</p>
+    </div>
+  )
+}
+
 export function LoadingScreen() {
-  const phase = useGameStore((s) => s.phase)
-  const progress = useGameStore((s) => s.loadProgress)
+  const ready = useGameStore((s) => s.phase === 'ready')
   const start = useGameStore((s) => s.start)
   const visible = !useGameStore((s) => s.started)
   const [mounted, setMounted] = useState(true)
@@ -40,7 +55,7 @@ export function LoadingScreen() {
         <p className="mt-3 text-sm font-bold tracking-[0.5em] text-violet-200/70 sm:text-base">5 REELS · 10 LINES · WILDS</p>
 
         <div className="mt-12 h-24">
-          {phase === 'ready' ? (
+          {ready ? (
             <button
               type="button"
               onClick={start}
@@ -52,20 +67,10 @@ export function LoadingScreen() {
               <span className="relative text-glow-cyan">PLAY</span>
             </button>
           ) : (
-            <div className="w-64 sm:w-80">
-              <div className="h-2 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
-                <div
-                  className="h-full rounded-full bg-linear-to-r from-neon-cyan via-neon-purple to-neon-pink shadow-[0_0_16px_rgba(255,43,214,0.8)] transition-[width] duration-300"
-                  style={{ width: `${Math.round(progress * 100)}%` }}
-                />
-              </div>
-              <p className="mt-3 font-display text-xs font-bold tracking-[0.4em] text-violet-200/60">
-                LOADING {Math.round(progress * 100)}%
-              </p>
-            </div>
+            <LoadingProgress />
           )}
         </div>
-        <p className="text-xs tracking-[0.3em] text-violet-200/40">{phase === 'ready' ? 'PRESS SPACE OR TAP TO START' : '\u00a0'}</p>
+        <p className="text-xs tracking-[0.3em] text-violet-200/40">{ready ? 'PRESS SPACE OR TAP TO START' : '\u00a0'}</p>
       </div>
     </div>
   )

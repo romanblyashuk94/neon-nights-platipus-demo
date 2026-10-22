@@ -58,9 +58,12 @@ function PaylineDiagram({ index }: { index: number }) {
 
 export function PaytableModal() {
   const open = useGameStore((s) => s.paytableOpen)
+  return open ? <Paytable /> : null
+}
+
+function Paytable() {
   const setOpen = useGameStore((s) => s.setPaytableOpen)
   const bet = useGameStore((s) => s.bet)
-  if (!open) return null
 
   return (
     <div

@@ -21,9 +21,8 @@ function StepButton({ label, onClick, disabled }: { label: string; onClick: () =
 
 export function BetSelector() {
   const bet = useGameStore((s) => s.bet)
-  const phase = useGameStore((s) => s.phase)
+  const locked = useGameStore((s) => s.phase !== 'idle')
   const changeBet = useGameStore((s) => s.changeBet)
-  const locked = phase !== 'idle'
 
   return (
     <div className="flex items-center gap-1.5 rounded-2xl bg-black/35 p-1.5 ring-1 ring-white/10">

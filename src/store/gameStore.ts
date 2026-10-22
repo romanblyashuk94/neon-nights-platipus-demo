@@ -175,6 +175,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setInset: (side, px) => {
+    if (get().insets[side] === px) return
     const insets = { ...get().insets, [side]: px }
     set({ insets })
     get().engine?.setInsets(insets.top, insets.bottom)

@@ -1,28 +1,38 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { formatCredits } from './format'
 
-/** Smoothly tweens a displayed number toward `target` (ease-out cubic). */
-export function useAnimatedNumber(target: number, duration = 600): number {
-  const [value, setValue] = useState(target)
+/**
+ * Tweens the credits shown in the returned element toward `target` (ease-out cubic).
+ * Frames are written to the DOM, not to state, so the meter doesn't re-render every frame;
+ * the element must have no React-managed children.
+ */
+export function useAnimatedCredits<T extends HTMLElement>(target: number, duration = 600) {
+  const ref = useRef<T>(null)
   const current = useRef(target)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
     const from = current.current
-    if (from === target) return
+    if (from === target) {
+      el.textContent = formatCredits(target)
+      return
+    }
     const start = performance.now()
     let frame = 0
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / duration)
       const next = from + (target - from) * (1 - Math.pow(1 - t, 3))
       current.current = next
-      setValue(next)
+      el.textContent = formatCredits(next)
       if (t < 1) frame = requestAnimationFrame(step)
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
   }, [target, duration])
 
-  return value
+  return ref
 }
 
 /** Reports how much screen space a HUD bar covers so the game can lay out around it. */

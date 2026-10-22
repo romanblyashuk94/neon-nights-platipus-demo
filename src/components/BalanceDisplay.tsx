@@ -1,8 +1,10 @@
-import { cn, formatCredits } from '../lib/format'
-import { useAnimatedNumber } from '../lib/hooks'
+import { cn } from '../lib/format'
+import { useAnimatedCredits } from '../lib/hooks'
 import { useGameStore } from '../store/gameStore'
 
-function Meter({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+function Meter({ label, value, duration, highlight }: { label: string; value: number; duration: number; highlight?: boolean }) {
+  const valueRef = useAnimatedCredits<HTMLDivElement>(value, duration)
+
   return (
     <div
       className={cn(
@@ -12,13 +14,12 @@ function Meter({ label, value, highlight }: { label: string; value: number; high
     >
       <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-violet-200/60 sm:text-xs">{label}</div>
       <div
+        ref={valueRef}
         className={cn(
           'truncate font-display text-base font-bold tabular-nums sm:text-2xl',
           highlight ? 'text-neon-yellow text-glow-yellow' : 'text-white',
         )}
-      >
-        {formatCredits(value)}
-      </div>
+      />
     </div>
   )
 }
@@ -26,13 +27,11 @@ function Meter({ label, value, highlight }: { label: string; value: number; high
 export function BalanceDisplay() {
   const balance = useGameStore((s) => s.balance)
   const lastWin = useGameStore((s) => s.lastWin)
-  const shownBalance = useAnimatedNumber(balance, 700)
-  const shownWin = useAnimatedNumber(lastWin, lastWin > 0 ? 1100 : 150)
 
   return (
     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:gap-3">
-      <Meter label="Balance" value={shownBalance} />
-      <Meter label="Win" value={shownWin} highlight={lastWin > 0} />
+      <Meter label="Balance" value={balance} duration={700} />
+      <Meter label="Win" value={lastWin} duration={lastWin > 0 ? 1100 : 150} highlight={lastWin > 0} />
     </div>
   )
 }
