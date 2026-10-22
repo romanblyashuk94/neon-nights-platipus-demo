@@ -100,7 +100,7 @@ export function TopBar() {
     >
       <div className="pointer-events-auto flex flex-wrap items-center gap-2">
         <span className="rounded-full border border-neon-cyan/40 bg-night-900/60 px-3 py-1 font-display text-[10px] font-bold tracking-[0.3em] text-neon-cyan backdrop-blur-md">
-          DEMO FOR PLATIPUS
+          PLATIPUS DEMO
         </span>
         <span className="hidden rounded-full border border-white/10 bg-night-900/50 px-3 py-1 text-xs font-semibold tracking-[0.15em] text-violet-200/60 backdrop-blur-md md:inline">
           React · PixiJS v8 · Tailwind
