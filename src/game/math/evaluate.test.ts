@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { SymbolId } from '../config'
 import { evaluateGrid, evaluateLine, getWinTier, type Grid } from './evaluate'
 import { createSeededRng } from './rng'
-import { REEL_STRIPS, spin, spinWithMinMultiplier } from './spin'
+import { REEL_STRIPS, spin, spinForTier } from './spin'
 
 /** Builds grid[reel][row] from three human-readable rows. */
 function fromRows(rows: SymbolId[][]): Grid {
@@ -118,10 +118,17 @@ describe('spin', () => {
     })
   })
 
-  it('can force a big win for the demo mode', () => {
-    const result = spinWithMinMultiplier(2, 15, createSeededRng(1))
-    expect(result.multiplier).toBeGreaterThanOrEqual(15)
-    expect(result.totalWin).toBeGreaterThanOrEqual(30)
+  it.each(['big', 'mega', 'epic'] as const)('can force exactly a %s win for the demo mode', (tier) => {
+    const rng = createSeededRng(1)
+    for (let i = 0; i < 20; i++) {
+      const result = spinForTier(2, tier, rng)
+      expect(result.tier).toBe(tier)
+      expect(result).toMatchObject(evaluateGrid(result.grid, 2))
+    }
+  })
+
+  it.each(['big', 'mega', 'epic'] as const)('falls back to a hand-built %s win', (tier) => {
+    expect(spinForTier(1, tier, () => 0).tier).toBe(tier)
   })
 
   it('has a realistic RTP and hit frequency', () => {

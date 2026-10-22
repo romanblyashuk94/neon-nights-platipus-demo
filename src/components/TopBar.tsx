@@ -1,4 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { WIN_TIERS } from "../game/config";
+import type { ForcedTier } from "../game/math/spin";
 import { useReportInset } from "../lib/hooks";
 import { useGameStore } from "../store/gameStore";
 import { FullscreenIcon, InfoIcon, SoundOffIcon, SoundOnIcon } from "./icons";
@@ -28,13 +30,22 @@ function IconButton({
   );
 }
 
-function BigWinArmedBadge() {
-  const armed = useGameStore((s) => s.forceBigWin);
-  if (!armed) return null;
+const ARMED_BADGE_STYLE: Record<ForcedTier, string> = {
+  big: "border-neon-pink/60 bg-neon-pink/15 text-neon-pink shadow-[0_0_20px_rgba(255,43,214,0.45)]",
+  mega: "border-neon-cyan/60 bg-neon-cyan/15 text-neon-cyan shadow-[0_0_20px_rgba(34,232,255,0.45)]",
+  epic: "border-neon-yellow/60 bg-neon-yellow/15 text-neon-yellow shadow-[0_0_20px_rgba(255,225,77,0.45)]",
+};
+
+function ForcedWinBadge() {
+  const forcedWin = useGameStore((s) => s.forcedWin);
+  if (!forcedWin) return null;
 
   return (
-    <span className="animate-pop-in rounded-full border border-neon-yellow/60 bg-neon-yellow/15 px-3 py-1 font-display text-[10px] font-bold tracking-[0.25em] text-neon-yellow shadow-[0_0_20px_rgba(255,225,77,0.45)]">
-      BIG WIN ARMED
+    <span
+      key={forcedWin}
+      className={`animate-pop-in rounded-full border px-3 py-1 font-display text-[10px] font-bold tracking-[0.25em] ${ARMED_BADGE_STYLE[forcedWin]}`}
+    >
+      {WIN_TIERS.find((t) => t.tier === forcedWin)!.label} ARMED
     </span>
   );
 }
@@ -94,7 +105,7 @@ export function TopBar() {
         <span className="hidden rounded-full border border-white/10 bg-night-900/50 px-3 py-1 text-xs font-semibold tracking-[0.15em] text-violet-200/60 backdrop-blur-md md:inline">
           React · PixiJS v8 · Tailwind
         </span>
-        <BigWinArmedBadge />
+        <ForcedWinBadge />
       </div>
 
       <div className="pointer-events-auto flex gap-2">

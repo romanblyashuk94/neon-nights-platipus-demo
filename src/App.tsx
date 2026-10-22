@@ -32,7 +32,7 @@ function useHotkeys() {
           void state.spin()
           break
         case 'KeyB':
-          state.armBigWin()
+          state.cycleForcedWin()
           break
         case 'KeyT':
           state.toggleTurbo()

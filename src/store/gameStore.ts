@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 import { sfx } from '../audio/sfx'
-import { BET_OPTIONS, DEFAULT_BET, START_BALANCE, WIN_TIERS, type WinTier } from '../game/config'
+import { BET_OPTIONS, DEFAULT_BET, START_BALANCE, type WinTier } from '../game/config'
 import type { SlotGame } from '../game/engine/SlotGame'
 import { roundMoney } from '../game/math/evaluate'
-import { spin as rollSpin, spinWithMinMultiplier } from '../game/math/spin'
+import { spin as rollSpin, spinForTier, type ForcedTier } from '../game/math/spin'
 
 export type Phase = 'loading' | 'ready' | 'idle' | 'spinning' | 'presenting'
 
-const BIG_WIN_MULTIPLIER = WIN_TIERS.find((t) => t.tier === 'big')!.minMultiplier
+const FORCED_WIN_CYCLE: (ForcedTier | null)[] = [null, 'big', 'epic']
 
 interface GameState {
   engine: SlotGame | null
@@ -21,7 +21,8 @@ interface GameState {
   turbo: boolean
   autoplay: boolean
   muted: boolean
-  forceBigWin: boolean
+  /** Demo cheat: the tier the next spin is guaranteed to land in. */
+  forcedWin: ForcedTier | null
   outOfCredits: boolean
   paytableOpen: boolean
   insets: { top: number; bottom: number }
@@ -34,7 +35,7 @@ interface GameState {
   toggleTurbo: () => void
   toggleAutoplay: () => void
   toggleMute: () => void
-  armBigWin: () => void
+  cycleForcedWin: () => void
   refill: () => void
   setPaytableOpen: (open: boolean) => void
   setInset: (side: 'top' | 'bottom', px: number) => void
@@ -52,7 +53,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   turbo: false,
   autoplay: false,
   muted: false,
-  forceBigWin: false,
+  forcedWin: null,
   outOfCredits: false,
   paytableOpen: false,
   insets: { top: 0, bottom: 0 },
@@ -98,13 +99,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       return
     }
 
-    const result = state.forceBigWin ? spinWithMinMultiplier(state.bet, BIG_WIN_MULTIPLIER) : rollSpin(state.bet)
+    const result = state.forcedWin ? spinForTier(state.bet, state.forcedWin) : rollSpin(state.bet)
     set({
       phase: 'spinning',
       balance: roundMoney(state.balance - state.bet),
       lastWin: 0,
       lastTier: 'none',
-      forceBigWin: false,
+      forcedWin: null,
       outOfCredits: false,
     })
 
@@ -159,9 +160,11 @@ export const useGameStore = create<GameState>((set, get) => ({
     sfx.click()
   },
 
-  armBigWin: () => {
+  cycleForcedWin: () => {
     sfx.click()
-    set((s) => ({ forceBigWin: !s.forceBigWin }))
+    set((s) => ({
+      forcedWin: FORCED_WIN_CYCLE[(FORCED_WIN_CYCLE.indexOf(s.forcedWin) + 1) % FORCED_WIN_CYCLE.length],
+    }))
   },
 
   refill: () => {
